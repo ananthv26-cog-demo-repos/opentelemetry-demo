@@ -68,9 +68,7 @@ def get_product_list(request_product_ids):
     with tracer.start_as_current_span("get_product_list") as span:
         max_responses = 5
 
-        # Formulate the list of characters to list of strings
-        request_product_ids_str = ''.join(request_product_ids)
-        request_product_ids = request_product_ids_str.split(',')
+        request_product_ids = list(request_product_ids)
 
         # Feature flag scenario - Cache Leak
         if check_feature_flag("recommendationCache"):

@@ -1,0 +1,156 @@
+name: Build and black-box test
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'JSON array of compose service names to build/test, e.g. ["paymentservice","cartservice"]'
+        required: true
+        default: '["paymentservice"]'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.pick.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          # filter name == docker compose service name
+          filters: |
+            accountingservice: [ 'src/accountingservice/**' ]
+            adservice: [ 'src/adservice/**' ]
+            cartservice: [ 'src/cartservice/**' ]
+            checkoutservice: [ 'src/checkoutservice/**' ]
+            currencyservice: [ 'src/currencyservice/**' ]
+            emailservice: [ 'src/emailservice/**' ]
+            featureflagservice: [ 'src/featureflagservice/**' ]
+            frauddetectionservice: [ 'src/frauddetectionservice/**' ]
+            frontend: [ 'src/frontend/**' ]
+            frontendproxy: [ 'src/frontendproxy/**' ]
+            loadgenerator: [ 'src/loadgenerator/**' ]
+            paymentservice: [ 'src/paymentservice/**' ]
+            productcatalogservice: [ 'src/productcatalogservice/**' ]
+            quoteservice: [ 'src/quoteservice/**' ]
+            recommendationservice: [ 'src/recommendationservice/**' ]
+            shippingservice: [ 'src/shippingservice/**' ]
+            kafka: [ 'src/kafka/**' ]
+            otelcol: [ 'src/otelcollector/**' ]
+            grafana: [ 'src/grafana/**' ]
+            prometheus: [ 'src/prometheus/**' ]
+            shared: [ 'pb/**', 'docker-compose.yml', '.env', 'test/**', '.github/workflows/build-and-blackbox.yml' ]
+
+      - name: pick services
+        id: pick
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes }}
+          DISPATCH: ${{ inputs.services }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "services=$DISPATCH" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          changed="${CHANGED:-[]}"
+          if echo "$changed" | jq -e 'index("shared")' > /dev/null; then
+            # shared contract/compose/test change: exercise every service that has black-box coverage
+            services='["adservice","cartservice","checkoutservice","currencyservice","emailservice","paymentservice","productcatalogservice","recommendationservice","shippingservice"]'
+          else
+            services=$(echo "$changed" | jq -c .)
+          fi
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+          echo "will build/test: $services"
+
+  service:
+    name: ${{ matrix.service }}
+    needs: changes
+    if: needs.changes.outputs.services != '[]' && needs.changes.outputs.services != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.changes.outputs.services) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build image
+        run: docker compose build ${{ matrix.service }}
+
+      - name: start service (dependencies pulled from registry)
+        run: docker compose up -d --no-build ${{ matrix.service }}
+
+      - name: wait for container to be stable
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+          cid=$(docker compose ps -q "$SERVICE")
+          for i in $(seq 1 30); do
+            state=$(docker inspect -f '{{.State.Status}}' "$cid")
+            restarts=$(docker inspect -f '{{.RestartCount}}' "$cid")
+            oom=$(docker inspect -f '{{.State.OOMKilled}}' "$cid")
+            if [ "$state" != "running" ] || [ "$restarts" != "0" ] || [ "$oom" = "true" ]; then
+              echo "::error::$SERVICE not stable: state=$state restarts=$restarts oomKilled=$oom"
+              docker compose logs --no-color "$SERVICE" | tail -100
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "$SERVICE stable for 60s (state=running, restarts=0)"
+
+      - name: runtime fingerprint
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          cid=$(docker compose ps -q "$SERVICE")
+          echo "image: $(docker inspect -f '{{.Config.Image}}' "$cid")"
+          docker exec "$cid" sh -c 'node --version 2>/dev/null || dotnet --version 2>/dev/null \
+            || ruby --version 2>/dev/null || python --version 2>/dev/null || java -version 2>&1 \
+            || php --version 2>/dev/null || elixir --version 2>/dev/null || cat /etc/os-release' 2>/dev/null | head -5 || true
+
+      - name: black-box tests
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+          case "$SERVICE" in
+            adservice) match='ad:*' ;;
+            cartservice) match='cart:*' ;;
+            checkoutservice) match='checkout:*' ;;
+            currencyservice) match='currency:*' ;;
+            emailservice) match='email:*' ;;
+            paymentservice) match='payment:*' ;;
+            productcatalogservice) match='product:*' ;;
+            recommendationservice) match='recommendation:*' ;;
+            shippingservice) match='shipping:*' ;;
+            *) echo "no black-box suite for $SERVICE; build + stability check is the gate"; exit 0 ;;
+          esac
+          docker compose build integrationTests
+          for attempt in 1 2 3; do
+            if docker compose run --rm --no-deps --entrypoint "npx ava --match=$match" integrationTests; then
+              exit 0
+            fi
+            echo "attempt $attempt failed; waiting for services to warm up"
+            sleep 15
+          done
+          echo "::error::black-box tests for $SERVICE failed"
+          exit 1
+
+      - name: logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+
+      - name: teardown
+        if: always()
+        run: docker compose down -v --remove-orphans

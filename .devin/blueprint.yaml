@@ -1,0 +1,50 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+# Every service builds and runs inside Docker, so the host only needs docker, compose and gRPC probes.
+initialize:
+  - name: docker hub pulls via mirror (anonymous docker.io pulls get 429-rate-limited)
+    run: |
+      sudo python3 - <<'EOF'
+      import json, os
+      p = '/etc/docker/daemon.json'
+      d = json.load(open(p)) if os.path.exists(p) else {}
+      d['registry-mirrors'] = ['https://mirror.gcr.io']
+      json.dump(d, open(p, 'w'), indent=2)
+      EOF
+      sudo systemctl restart docker
+  - name: grpcurl + grpc_health_probe for runtime proof
+    run: |
+      curl -sSfL https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz | sudo tar -xz -C /usr/local/bin grpcurl
+      curl -sSfL -o /tmp/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.39/grpc_health_probe-linux-amd64
+      sudo install -m755 /tmp/grpc_health_probe /usr/local/bin/grpc_health_probe
+# Warm the release images so a session only has to build the one service it changes.
+maintenance: |
+  docker compose pull --quiet --ignore-pull-failures
+  docker compose build integrationTests
+knowledge:
+  - name: build-and-run-one-service
+    contents: |
+      docker compose build <svc> && docker compose up -d --no-build <svc>   # deps come from ghcr.io/open-telemetry/demo:1.3.0-*
+      docker compose ps; docker compose logs <svc> --tail=50
+  - name: black-box-test-one-service
+    contents: |
+      # test names are prefixed ad|cart|checkout|currency|email|payment|product|recommendation|shipping (see test/test.js)
+      docker compose run --rm --no-deps --entrypoint "npx ava --match='payment:*'" integrationTests
+  - name: runtime-proof
+    contents: |
+      addr=$(docker compose port paymentservice 50051)          # host ports are ephemeral
+      grpc_health_probe -addr "$addr"                           # -> status: SERVING
+      grpcurl -plaintext -import-path pb -proto demo.proto "$addr" list
+      docker exec payment-service node --version                # prove the runtime inside the container
+      docker inspect payment-service --format 'OOM={{.State.OOMKilled}} restarts={{.RestartCount}}'
+  - name: full-stack
+    contents: |
+      docker compose up -d && docker compose run --rm --no-deps integrationTests   # all 17 black-box tests
+      # shop UI: http://localhost:8080  (frontendproxy/envoy)
+  - name: ci
+    contents: |
+      .github/workflows/build-and-blackbox.yml runs per changed src/<svc>/** dir on PRs: build image, 60s stability, black-box tests.
+      Manual: gh workflow run build-and-blackbox.yml -f services='["cartservice"]'
+  - name: gotchas
+    contents: |
+      docker-compose.yml memory limits are tight (deploy.resources.limits) — an OOMKilled container shows as "Restarting"; check `docker inspect --format '{{.State.OOMKilled}}'`.
+      Lint checks (checks.yml) run `npm install` + make markdownlint/yamllint/misspell at repo root.
