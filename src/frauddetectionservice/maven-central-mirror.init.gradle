@@ -1,0 +1,17 @@
+// repo.maven.apache.org rate-limits (HTTP 429) shared CI/build egress IPs; resolve
+// Maven Central artifacts through Google's read-only mirror instead.
+def mirror = "https://maven-central.storage-download.googleapis.com/maven2/"
+
+beforeSettings { settings ->
+    settings.pluginManagement.repositories {
+        maven { url mirror }
+        gradlePluginPortal()
+    }
+    settings.dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+        repositories {
+            maven { url mirror }
+            gradlePluginPortal()
+        }
+    }
+}

@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.google.protobuf.gradle.*
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.9.25"
     application
     id("java")
     id("idea")
     id("com.google.protobuf") version "0.9.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "io.opentelemetry"
@@ -54,7 +54,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "21"
 }
 
 protobuf {
