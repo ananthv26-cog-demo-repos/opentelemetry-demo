@@ -1,4 +1,4 @@
-FROM gradle:7-jdk17 AS builder
+FROM gradle:8-jdk17 AS builder
 
 WORKDIR /usr/src/app/
 
@@ -8,7 +8,7 @@ RUN gradle shadowJar
 
 # -----------------------------------------------------------------------------
 
-FROM gcr.io/distroless/java17-debian11
+FROM gcr.io/distroless/java17-debian12
 
 ARG version=1.22.1
 WORKDIR /usr/src/app/
