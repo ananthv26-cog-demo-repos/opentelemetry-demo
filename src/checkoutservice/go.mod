@@ -1,6 +1,6 @@
 module github.com/open-telemetry/opentelemetry-demo/src/checkoutservice
 
-go 1.19
+go 1.24
 
 require (
 	github.com/Shopify/sarama v1.37.2
