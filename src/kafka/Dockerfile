@@ -5,6 +5,9 @@ ARG version=2.31.1
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v$version/opentelemetry-javaagent.jar /tmp/opentelemetry-javaagent.jar
 RUN chmod go+r /tmp/opentelemetry-javaagent.jar
 
+# the ubi9 base ships neither netcat nor a package manager; the healthcheck needs `nc`
+COPY --from=busybox:musl /bin/busybox /usr/local/bin/nc
+
 USER appuser
 WORKDIR /tmp
 COPY ./src/kafka/clusterID clusterID
@@ -22,6 +25,11 @@ ENV KAFKA_METADATA_LOG_MAX_RECORD_BYTES_BETWEEN_SNAPSHOTS=2800
 ENV KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
 ENV KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 ENV KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+# agent 2.x defaults to http/protobuf; the collector endpoints passed by compose are gRPC (4317).
+# logs export is on by default in 2.x but compose passes no logs endpoint, so keep it off as in 1.x.
+ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+ENV OTEL_LOGS_EXPORTER=none
+ENV KAFKA_HEAP_OPTS="-Xms256m -Xmx512m"
 ENV KAFKA_OPTS="-javaagent:/tmp/opentelemetry-javaagent.jar -Dotel.jmx.target.system=kafka-broker"
 
 ENTRYPOINT ["/bin/sh", "-c", "export CLUSTER_ID=$(cat /tmp/clusterID) && /etc/confluent/docker/run"]
