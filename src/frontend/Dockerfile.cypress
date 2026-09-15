@@ -1,4 +1,4 @@
-FROM cypress/included:10.3.1-typescript
+FROM cypress/included:13.17.0
 WORKDIR /app
 COPY ./src/frontend .
 RUN npm ci
