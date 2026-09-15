@@ -48,3 +48,16 @@ knowledge:
     contents: |
       docker-compose.yml memory limits are tight (deploy.resources.limits) — an OOMKilled container shows as "Restarting"; check `docker inspect --format '{{.State.OOMKilled}}'`.
       Lint checks (checks.yml) run `npm install` + make markdownlint/yamllint/misspell at repo root.
+      checkout:* and shipping:* black-box tests need quoteservice up: `docker compose up -d --no-build quoteservice` first (compose lacks the depends_on).
+      `recommendation: list products` is flaky against the pulled ghcr 1.3.0 recommendationservice image
+      (upstream bug fixed on main, but that service doesn't build on main); a rebuilt image passes deterministically.
+      Distroless/alpine release images have no toolchain, so `go version`/`rustc --version` fail inside the container. Prove the runtime via
+      Go:   `docker exec <c> cat /proc/1/exe | strings | grep -o 'go1\.[0-9.]*'`
+      Rust: `docker exec <c> cat /proc/1/exe | strings | grep -o 'rustc version [0-9.]*'` (absent if stripped), or
+            `rustc --version` printed from the Dockerfile build stage during `docker compose build --progress=plain`.
+      CHANGELOG.md is a shared root file — per-service runtime bumps must NOT edit it (Devin Review will ask; decline in-thread).
+  - name: maven-central-429
+    contents: |
+      Java/Kotlin image builds (adservice, frauddetectionservice, kafka agent) can hit HTTP 429 from repo.maven.apache.org on this VM's egress IP.
+      Mirror: https://maven-central.storage-download.googleapis.com/maven2/
+      (add as a repository in build.gradle / settings.xml inside the Dockerfile build stage, or retry after ~30 min).
