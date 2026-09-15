@@ -517,6 +517,7 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES
       - OTEL_SERVICE_NAME=shippingservice
     depends_on:
+      - quoteservice
       - otelcol
     logging: *logging
 
