@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM eclipse-temurin:17-jdk AS builder
+FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /usr/src/app/
 
@@ -28,9 +28,9 @@ RUN ./gradlew installDist -PprotoSourceDir=./proto
 
 # -----------------------------------------------------------------------------
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
-ARG version=1.19.1
+ARG version=1.32.1
 WORKDIR /usr/src/app/
 
 COPY --from=builder /usr/src/app/ ./

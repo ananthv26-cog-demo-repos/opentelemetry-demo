@@ -1,11 +1,14 @@
 plugins {
-    id 'com.google.protobuf' version '0.8.18'
+    id 'com.google.protobuf' version '0.9.4'
     id 'com.github.sherter.google-java-format' version '0.9'
     id 'idea'
     id 'application'
 }
 
 repositories {
+    maven {
+        url 'https://maven-central.storage-download.googleapis.com/maven2/'
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -21,8 +24,8 @@ def jacksonVersion = "2.13.2"
 def protocVersion = "3.20.0"
 
 tasks.withType(JavaCompile) {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 ext {
