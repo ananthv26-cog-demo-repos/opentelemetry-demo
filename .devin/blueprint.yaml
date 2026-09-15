@@ -52,8 +52,9 @@ knowledge:
       `recommendation: list products` is flaky against the pulled ghcr 1.3.0 recommendationservice image
       (upstream bug fixed on main, but that service doesn't build on main); a rebuilt image passes deterministically.
       Distroless/alpine release images have no toolchain, so `go version`/`rustc --version` fail inside the container. Prove the runtime via
-      Go: `docker exec <c> cat /proc/1/exe | strings | grep -o 'go1\.[0-9.]*'`; Rust: `strings | grep -o 'rustc version [0-9.]*'` (absent if stripped)
-      or `rustc --version` printed from the Dockerfile build stage during `docker compose build --progress=plain`.
+      Go:   `docker exec <c> cat /proc/1/exe | strings | grep -o 'go1\.[0-9.]*'`
+      Rust: `docker exec <c> cat /proc/1/exe | strings | grep -o 'rustc version [0-9.]*'` (absent if stripped), or
+            `rustc --version` printed from the Dockerfile build stage during `docker compose build --progress=plain`.
       CHANGELOG.md is a shared root file — per-service runtime bumps must NOT edit it (Devin Review will ask; decline in-thread).
   - name: maven-central-429
     contents: |
