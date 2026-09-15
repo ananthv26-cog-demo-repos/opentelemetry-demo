@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(currency-service)
 
-find_package(Protobuf)
-find_package(gRPC)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(Protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+find_package(opentelemetry-cpp CONFIG REQUIRED)
 
 set(PROTO_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(GENERATED_PROTOBUF_PATH "${CMAKE_BINARY_DIR}/generated/proto")
@@ -26,6 +30,7 @@ foreach(IMPORT_DIR ${PROTOBUF_IMPORT_DIRS})
 endforeach()
 
 find_program(gRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+find_library(UTF8_VALIDITY_LIBRARY utf8_validity)
 
 add_custom_command(
     OUTPUT ${DEMO_PB_H_FILE}
@@ -38,7 +43,7 @@ add_custom_command(
            ${HEALTH_GRPC_PB_H_FILE}
 
     COMMAND
-      ${PROTOBUF_PROTOC_EXECUTABLE} ARGS "--experimental_allow_proto3_optional"
+      $<TARGET_FILE:protobuf::protoc> ARGS "--experimental_allow_proto3_optional"
       "--proto_path=${PROTO_PATH}" ${PROTOBUF_INCLUDE_FLAGS}
       "--cpp_out=${GENERATED_PROTOBUF_PATH}"
       "--grpc_out=generate_mock_code=true:${GENERATED_PROTOBUF_PATH}"
@@ -62,6 +67,12 @@ add_executable(currencyservice src/server.cpp)
 add_dependencies(currencyservice demo-proto)
 target_link_libraries(
     currencyservice demo-proto protobuf::libprotobuf
-     opentelemetry_trace opentelemetry_common opentelemetry_exporter_otlp_grpc opentelemetry_exporter_otlp_grpc_client opentelemetry_proto opentelemetry_otlp_recordable opentelemetry_resources gRPC::grpc++)
+     opentelemetry-cpp::trace opentelemetry-cpp::common opentelemetry-cpp::otlp_grpc_exporter
+     opentelemetry-cpp::otlp_grpc_client opentelemetry-cpp::proto opentelemetry-cpp::otlp_recordable
+     opentelemetry-cpp::resources gRPC::grpc++)
+
+if(UTF8_VALIDITY_LIBRARY)
+  target_link_libraries(currencyservice ${UTF8_VALIDITY_LIBRARY})
+endif()
 
 install(TARGETS currencyservice DESTINATION bin)
