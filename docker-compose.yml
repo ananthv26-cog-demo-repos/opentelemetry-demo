@@ -518,6 +518,7 @@ services:
       - OTEL_SERVICE_NAME=shippingservice
     depends_on:
       - otelcol
+      - quoteservice
     logging: *logging
 
   # ******************
