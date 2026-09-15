@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.10-slim-bullseye as base
+FROM python:3.12-slim-bookworm as base
 
 #
 # Fetch requirements
@@ -35,7 +35,7 @@ FROM base as grpc-builder
 WORKDIR /usr/src/app/
 COPY ./pb/ ./proto/
 
-RUN python -m pip install grpcio-tools==1.48.2
+RUN python -m pip install grpcio-tools==1.62.3
 RUN python -m grpc_tools.protoc -I=./proto/ --python_out=./ --grpc_python_out=./ ./proto/demo.proto
 
 #
