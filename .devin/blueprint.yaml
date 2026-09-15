@@ -1,5 +1,5 @@
 # https://docs.devin.ai/onboard-devin/environment-yaml
-# One-time setup (e.g., install system tools, global CLIs).
+# Every service builds and runs inside Docker, so the host only needs docker, compose and gRPC probes.
 initialize:
   - name: docker hub pulls via mirror (anonymous docker.io pulls get 429-rate-limited)
     run: |
@@ -16,7 +16,7 @@ initialize:
       curl -sSfL https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz | sudo tar -xz -C /usr/local/bin grpcurl
       curl -sSfL -o /tmp/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.39/grpc_health_probe-linux-amd64
       sudo install -m755 /tmp/grpc_health_probe /usr/local/bin/grpc_health_probe
-# Install project dependencies (runs during builds, surfaced to agent at session start).
+# Warm the release images so a session only has to build the one service it changes.
 maintenance: |
   docker compose pull --quiet --ignore-pull-failures
   docker compose build integrationTests
@@ -51,8 +51,9 @@ knowledge:
       checkout:* and shipping:* black-box tests need quoteservice up: `docker compose up -d --no-build quoteservice` first (compose lacks the depends_on).
       `recommendation: list products` is flaky against the pulled ghcr 1.3.0 recommendationservice image
       (upstream bug fixed on main, but that service doesn't build on main); a rebuilt image passes deterministically.
-      Distroless/alpine release images have no toolchain: prove Go/Rust runtime via
-      `docker exec <c> cat /proc/1/exe | strings | grep 'go1\.'` or the build stage's `go version`, not `go version` in the container.
+      Distroless/alpine release images have no toolchain, so `go version`/`rustc --version` fail inside the container. Prove the runtime via
+      Go: `docker exec <c> cat /proc/1/exe | strings | grep -o 'go1\.[0-9.]*'`; Rust: `strings | grep -o 'rustc version [0-9.]*'` (absent if stripped)
+      or `rustc --version` printed from the Dockerfile build stage during `docker compose build --progress=plain`.
       CHANGELOG.md is a shared root file — per-service runtime bumps must NOT edit it (Devin Review will ask; decline in-thread).
   - name: maven-central-429
     contents: |
