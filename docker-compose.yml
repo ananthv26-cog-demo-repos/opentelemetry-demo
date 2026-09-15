@@ -525,7 +525,7 @@ services:
   # ******************
   # Postgres used by Feature Flag service
   ffs_postgres:
-    image: postgres:14
+    image: postgres:16
     container_name: postgres
     user: postgres
     deploy:
@@ -575,7 +575,7 @@ services:
 
   # Redis used by Cart service
   redis-cart:
-    image: redis:alpine
+    image: redis:7.4-alpine
     container_name: redis-cart
     user: redis
     deploy:
@@ -593,7 +593,7 @@ services:
   # ********************
   # Jaeger
   jaeger:
-    image: jaegertracing/all-in-one
+    image: jaegertracing/all-in-one:1.69.0
     container_name: jaeger
     command:
       - "--memory.max-traces"
@@ -602,6 +602,8 @@ services:
       - "/jaeger/ui"
       - "--prometheus.server-url"
       - "http://${PROMETHEUS_ADDR}"
+      - "--prometheus.query.normalize-calls=true"
+      - "--prometheus.query.normalize-duration=true"
     deploy:
       resources:
         limits:
@@ -617,7 +619,7 @@ services:
 
   # Grafana
   grafana:
-    image: grafana/grafana:9.1.0
+    image: grafana/grafana:11.6.16
     container_name: grafana
     volumes:
       - ./src/grafana/grafana.ini:/etc/grafana/grafana.ini
@@ -628,12 +630,12 @@ services:
 
   # OpenTelemetry Collector
   otelcol:
-    image: otel/opentelemetry-collector-contrib:0.69.0
+    image: otel/opentelemetry-collector-contrib:0.160.0
     container_name: otel-col
     deploy:
       resources:
         limits:
-          memory: 100M
+          memory: 200M
     restart: unless-stopped
     command: [ "--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-config-extras.yml" ]
     volumes:
@@ -650,7 +652,7 @@ services:
 
   # Prometheus
   prometheus:
-    image: quay.io/prometheus/prometheus:v2.34.0
+    image: quay.io/prometheus/prometheus:v3.5.5
     container_name: prometheus
     command:
       - --web.console.templates=/etc/prometheus/consoles
