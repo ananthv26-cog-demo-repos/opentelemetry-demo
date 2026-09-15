@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # https://mcr.microsoft.com/v2/dotnet/sdk/tags/list
-FROM mcr.microsoft.com/dotnet/sdk:6.0.300 AS builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0.401 AS builder
 
 WORKDIR /usr/src/app/
 
@@ -21,15 +21,16 @@ COPY ./src/cartservice/ ./
 COPY ./pb/ ./src/protos/
 
 RUN \
+  dotnet --version && \
   RUNTIME_IDENTIIFER=linux-musl-x64; \
   if [ "$(uname -m)" = "aarch64" ]; then RUNTIME_IDENTIIFER=linux-musl-arm64; fi; \
   dotnet restore ./src/cartservice.csproj -r $RUNTIME_IDENTIIFER && \
-  dotnet publish ./src/cartservice.csproj -p:PublishSingleFile=true -r $RUNTIME_IDENTIIFER --self-contained true -p:PublishTrimmed=True -p:TrimMode=Link -c Release -o /cartservice --no-restore
+  dotnet publish ./src/cartservice.csproj -p:PublishSingleFile=true -r $RUNTIME_IDENTIIFER --self-contained true -p:PublishTrimmed=True -p:TrimMode=full -c Release -o /cartservice --no-restore
 
 # -----------------------------------------------------------------------------
 
 # https://mcr.microsoft.com/v2/dotnet/runtime-deps/tags/list
-FROM mcr.microsoft.com/dotnet/runtime-deps:6.0.5-alpine3.15
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0.12-alpine3.24
 
 WORKDIR /usr/src/app/
 COPY --from=builder /cartservice/ ./
