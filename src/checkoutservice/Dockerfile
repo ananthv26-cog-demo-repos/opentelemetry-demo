@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.19.2-alpine AS builder
+FROM golang:1.24-alpine AS builder
 RUN apk add build-base protobuf-dev protoc
 WORKDIR /usr/src/app/
 
@@ -29,7 +29,7 @@ RUN go build -o /go/bin/checkoutservice/ ./
 
 # -----------------------------------------------------------------------------
 
-FROM alpine
+FROM alpine:3.22
 
 WORKDIR /usr/src/app/
 
