@@ -1,6 +1,6 @@
 module github.com/opentelemetry/opentelemetry-demo/src/productcatalogservice
 
-go 1.17
+go 1.24
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
