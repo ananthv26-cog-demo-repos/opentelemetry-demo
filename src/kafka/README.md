@@ -5,6 +5,6 @@ the accounting and fraud detection services.
 
 ## KRaft: Kafka without ZooKeeper
 
-Kafka is run in KRaft mode. The `update_run.sh` script is used to configure
-the system to run Kafka in this mode. Environment variables are substituted at
-deploy-time.
+Kafka is run in KRaft mode, which the `confluentinc/cp-kafka` image supports
+natively when `KAFKA_PROCESS_ROLES` and `CLUSTER_ID` are set. Environment
+variables are substituted at deploy-time.
