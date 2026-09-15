@@ -20,6 +20,14 @@ RUN chmod +x /usr/local/bin/install-php-extensions \
     protobuf \
     opentelemetry-1.1.3
 
+# The compose memory limit for this service is 30M; cap opcache and the prefork
+# pool so a burst of concurrent requests cannot grow past it.
+RUN printf 'opcache.memory_consumption=16\nopcache.interned_strings_buffer=4\nopcache.max_accelerated_files=4000\n' \
+      > /usr/local/etc/php/conf.d/zz-opcache.ini \
+  && printf '<IfModule mpm_prefork_module>\n  StartServers 2\n  MinSpareServers 1\n  MaxSpareServers 3\n  MaxRequestWorkers 6\n  MaxConnectionsPerChild 500\n</IfModule>\n' \
+      > /etc/apache2/conf-available/zz-prefork.conf \
+  && a2enconf zz-prefork
+
 WORKDIR /var/www
 COPY --from=build /tmp/vendor/ ./vendor/
 COPY ./src/quoteservice/ /var/www
