@@ -120,7 +120,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(otelcol_receiver_accepted_spans{receiver=~\"$receiver\"}[1m])) by (receiver)",
+          "expr": "sum(rate(otelcol_receiver_accepted_spans_total{receiver=~\"$receiver\"}[1m])) by (receiver)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -128,7 +128,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(otelcol_receiver_refused_spans{receiver=~\"$receiver\"}[1m])) by (receiver)",
+          "expr": "sum(rate(otelcol_receiver_refused_spans_total{receiver=~\"$receiver\"}[1m])) by (receiver)",
           "interval": "",
           "legendFormat": "{{ receiver }} spans refused /sec",
           "refId": "B"
@@ -225,7 +225,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(otelcol_receiver_accepted_metric_points{receiver=~\"$receiver\"}[1m])) by (receiver)",
+          "expr": "sum(rate(otelcol_receiver_accepted_metric_points_total{receiver=~\"$receiver\"}[1m])) by (receiver)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -233,7 +233,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(otelcol_receiver_refused_metric_points{receiver=~\"$receiver\"}[1m])) by (receiver)",
+          "expr": "sum(rate(otelcol_receiver_refused_metric_points_total{receiver=~\"$receiver\"}[1m])) by (receiver)",
           "interval": "",
           "legendFormat": "{{ receiver }} refused / sec",
           "refId": "B"
@@ -344,7 +344,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(otelcol_exporter_sent_spans{exporter=~\"$exporter\"}[1m])) by (exporter)",
+          "expr": "sum(rate(otelcol_exporter_sent_spans_total{exporter=~\"$exporter\"}[1m])) by (exporter)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -352,7 +352,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(otelcol_exporter_send_failed_spans{exporter=~\"$exporter\"}[1m])) by (exporter)",
+          "expr": "sum(rate(otelcol_exporter_send_failed_spans_total{exporter=~\"$exporter\"}[1m])) by (exporter)",
           "interval": "",
           "legendFormat": "{{ exporter }} failed /sec",
           "refId": "B"
@@ -449,7 +449,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(otelcol_exporter_sent_metric_points{exporter=~\"$exporter\"}[1m])) by (exporter)",
+          "expr": "sum(rate(otelcol_exporter_sent_metric_points_total{exporter=~\"$exporter\"}[1m])) by (exporter)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -457,7 +457,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(otelcol_exporter_send_failed_metric_points{exporter=~\"$exporter\"}[1m])) by (exporter)",
+          "expr": "sum(rate(otelcol_exporter_send_failed_metric_points_total{exporter=~\"$exporter\"}[1m])) by (exporter)",
           "interval": "",
           "legendFormat": "{{ exporter }} failed / sec",
           "refId": "B"
