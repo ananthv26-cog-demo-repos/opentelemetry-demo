@@ -525,7 +525,7 @@ services:
   # ******************
   # Postgres used by Feature Flag service
   ffs_postgres:
-    image: postgres:14
+    image: postgres:17
     container_name: postgres
     user: postgres
     deploy:
@@ -575,7 +575,7 @@ services:
 
   # Redis used by Cart service
   redis-cart:
-    image: redis:alpine
+    image: redis:8.2-alpine
     container_name: redis-cart
     user: redis
     deploy:
@@ -593,7 +593,7 @@ services:
   # ********************
   # Jaeger
   jaeger:
-    image: jaegertracing/all-in-one
+    image: jaegertracing/all-in-one:1.76.0
     container_name: jaeger
     command:
       - "--memory.max-traces"
