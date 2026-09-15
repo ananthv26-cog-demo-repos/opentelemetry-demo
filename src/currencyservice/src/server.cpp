@@ -18,7 +18,7 @@
 #include <grpc/health/v1/health.grpc.pb.h>
 
 #include "opentelemetry/trace/context.h"
-#include "opentelemetry/trace/semantic_conventions.h"
+#include "opentelemetry/semconv/incubating/rpc_attributes.h"
 #include "opentelemetry/trace/span_context_kv_iterable_view.h"
 #include "opentelemetry/baggage/baggage.h"
 #include "opentelemetry/nostd/string_view.h"
@@ -47,6 +47,7 @@ using SpanContext = opentelemetry::trace::SpanContext;
 using namespace opentelemetry::trace;
 using namespace opentelemetry::baggage;
 namespace context = opentelemetry::context;
+namespace semconv_rpc = opentelemetry::semconv::rpc;
 
 namespace
 {
@@ -116,10 +117,10 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
     std::string span_name = "CurrencyService/GetSupportedCurrencies";
     auto span =
         get_tracer("currencyservice")->StartSpan(span_name,
-                                      {{SemanticConventions::kRpcSystem, "grpc"},
-                                       {SemanticConventions::kRpcService, "CurrencyService"},
-                                       {SemanticConventions::kRpcMethod, "GetSupportedCurrencies"},
-                                       {SemanticConventions::kRpcGrpcStatusCode, 0}},
+                                      {{semconv_rpc::kRpcSystem, "grpc"},
+                                       {semconv_rpc::kRpcService, "CurrencyService"},
+                                       {semconv_rpc::kRpcMethod, "GetSupportedCurrencies"},
+                                       {semconv_rpc::kRpcGrpcStatusCode, 0}},
                                       options);
     auto scope = get_tracer("currencyservice")->WithActiveSpan(span);
 
@@ -176,10 +177,10 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
     std::string span_name = "CurrencyService/Convert";
     auto span =
         get_tracer("currencyservice")->StartSpan(span_name,
-                                      {{SemanticConventions::kRpcSystem, "grpc"},
-                                       {SemanticConventions::kRpcService, "CurrencyService"},
-                                       {SemanticConventions::kRpcMethod, "Convert"},
-                                       {SemanticConventions::kRpcGrpcStatusCode, 0}},
+                                      {{semconv_rpc::kRpcSystem, "grpc"},
+                                       {semconv_rpc::kRpcService, "CurrencyService"},
+                                       {semconv_rpc::kRpcMethod, "Convert"},
+                                       {semconv_rpc::kRpcGrpcStatusCode, 0}},
                                       options);
     auto scope = get_tracer("currencyservice")->WithActiveSpan(span);
 

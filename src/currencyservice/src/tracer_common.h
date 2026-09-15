@@ -87,10 +87,10 @@ void initTracer()
       opentelemetry::sdk::trace::SimpleSpanProcessorFactory::Create(std::move(exporter));
   std::vector<std::unique_ptr<opentelemetry::sdk::trace::SpanProcessor>> processors;
   processors.push_back(std::move(processor));
-  std::shared_ptr<opentelemetry::sdk::trace::TracerContext> context =
+  std::unique_ptr<opentelemetry::sdk::trace::TracerContext> context =
       opentelemetry::sdk::trace::TracerContextFactory::Create(std::move(processors));
   std::shared_ptr<opentelemetry::trace::TracerProvider> provider =
-      opentelemetry::sdk::trace::TracerProviderFactory::Create(context);
+      opentelemetry::sdk::trace::TracerProviderFactory::Create(std::move(context));
  // Set the global trace provider
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 
