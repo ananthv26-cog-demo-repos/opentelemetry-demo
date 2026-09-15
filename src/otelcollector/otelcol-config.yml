@@ -32,6 +32,8 @@ processors:
 connectors:
   span_metrics:
     namespace: ""
+    exemplars:
+      enabled: true
 
 extensions:
   health_check:
