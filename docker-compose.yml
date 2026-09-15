@@ -446,7 +446,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 40M
+          memory: 30M
     restart: unless-stopped
     ports:
       - "${QUOTE_SERVICE_PORT}"
