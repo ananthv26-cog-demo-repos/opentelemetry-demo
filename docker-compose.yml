@@ -224,7 +224,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: 300M
     restart: unless-stopped
     ports:
       - "${FEATURE_FLAG_SERVICE_PORT}"                                  # Feature Flag Service UI
