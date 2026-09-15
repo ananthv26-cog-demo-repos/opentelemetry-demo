@@ -118,8 +118,7 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
     auto span =
         get_tracer("currencyservice")->StartSpan(span_name,
                                       {{semconv::rpc::kRpcSystemName, "grpc"},
-                                       {semconv::rpc::kRpcMethod, "hipstershop.CurrencyService/GetSupportedCurrencies"},
-                                       {semconv::rpc::kRpcResponseStatusCode, "0"}},
+                                       {semconv::rpc::kRpcMethod, "hipstershop.CurrencyService/GetSupportedCurrencies"}},
                                       options);
     auto scope = get_tracer("currencyservice")->WithActiveSpan(span);
 
@@ -130,6 +129,7 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
     }
 
     span->AddEvent("Currencies fetched, response sent back");
+    span->SetAttribute(semconv::rpc::kRpcResponseStatusCode, "OK");
     span->SetStatus(StatusCode::kOk);
     // Make sure to end your spans!
     span->End();
@@ -177,8 +177,7 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
     auto span =
         get_tracer("currencyservice")->StartSpan(span_name,
                                       {{semconv::rpc::kRpcSystemName, "grpc"},
-                                       {semconv::rpc::kRpcMethod, "hipstershop.CurrencyService/Convert"},
-                                       {semconv::rpc::kRpcResponseStatusCode, "0"}},
+                                       {semconv::rpc::kRpcMethod, "hipstershop.CurrencyService/Convert"}},
                                       options);
     auto scope = get_tracer("currencyservice")->WithActiveSpan(span);
 
@@ -203,6 +202,7 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
 
       // End the span
       span->AddEvent("Conversion successful, response sent back");
+      span->SetAttribute(semconv::rpc::kRpcResponseStatusCode, "OK");
       span->SetStatus(StatusCode::kOk);
       std::cout << __func__ << " conversion successful" << std::endl;
       span->End();
@@ -210,6 +210,7 @@ class CurrencyService final : public hipstershop::CurrencyService::Service
 
     } catch(...) {
       span->AddEvent("Conversion failed");
+      span->SetAttribute(semconv::rpc::kRpcResponseStatusCode, "CANCELLED");
       span->SetStatus(StatusCode::kError);
       std::cout << __func__ << " conversion failure" << std::endl;
       span->End();
