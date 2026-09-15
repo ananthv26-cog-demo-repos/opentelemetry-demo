@@ -665,18 +665,19 @@
           "type": "prometheus",
           "uid": "webstore-metrics"
         },
-        "definition": "latency_bucket",
+        "definition": "label_values(traces_span_metrics_duration_milliseconds_bucket, service_name)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
         "name": "service",
         "options": [],
         "query": {
-          "query": "latency_bucket",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(traces_span_metrics_duration_milliseconds_bucket, service_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
-        "regex": "/.*service_name=\\\"([^\\\"]+)\\\".*/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"

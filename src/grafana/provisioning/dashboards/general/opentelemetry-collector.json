@@ -905,7 +905,7 @@
           "type": "prometheus",
           "uid": "webstore-metrics"
         },
-        "definition": "label_values(otelcol_receiver_accepted_spans, receiver)",
+        "definition": "label_values({__name__=~\"otelcol_receiver_accepted_(spans|metric_points|log_records)\"}, receiver)",
         "hide": 0,
         "includeAll": true,
         "label": "receiver",
@@ -914,7 +914,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(otelcol_receiver_accepted_spans, receiver)",
+          "query": "label_values({__name__=~\"otelcol_receiver_accepted_(spans|metric_points|log_records)\"}, receiver)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -934,7 +934,7 @@
           "type": "prometheus",
           "uid": "webstore-metrics"
         },
-        "definition": "label_values(otelcol_exporter_sent_spans, exporter)",
+        "definition": "label_values({__name__=~\"otelcol_exporter_sent_(spans|metric_points|log_records)\"}, exporter)",
         "hide": 0,
         "includeAll": true,
         "label": "exporter",
@@ -943,7 +943,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(otelcol_exporter_sent_spans, exporter)",
+          "query": "label_values({__name__=~\"otelcol_exporter_sent_(spans|metric_points|log_records)\"}, exporter)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

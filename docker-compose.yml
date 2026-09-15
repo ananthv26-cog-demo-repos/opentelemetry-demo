@@ -524,6 +524,9 @@ services:
   # Dependent Services
   # ******************
   # Postgres used by Feature Flag service
+  # Data lives in an anonymous volume that compose keeps across recreations, and a data
+  # directory is only readable by the major version that created it: run
+  # `docker compose down -v` when the postgres major version changes.
   ffs_postgres:
     image: postgres:16
     container_name: postgres
