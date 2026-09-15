@@ -1,6 +1,7 @@
-FROM cypress/included:10.3.1-typescript
+FROM cypress/included:16.0.0
 WORKDIR /app
 COPY ./src/frontend .
-RUN npm ci
+# the image ships the Cypress binary; skip the one the lockfile's cypress package would download
+RUN CYPRESS_INSTALL_BINARY=0 npm ci
 
 ENTRYPOINT ["cypress", "run"]
