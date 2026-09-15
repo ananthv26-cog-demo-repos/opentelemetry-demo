@@ -556,7 +556,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 800M
+          memory: 1200M
     restart: unless-stopped
     environment:
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
@@ -567,7 +567,7 @@ services:
       - OTEL_SERVICE_NAME=kafka
     logging: *logging
     healthcheck:
-      test: nc -z kafka 9092
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/kafka/9092"]
       start_period: 10s
       interval: 5s
       timeout: 10s
