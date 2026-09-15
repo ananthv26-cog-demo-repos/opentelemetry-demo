@@ -155,6 +155,8 @@ services:
         condition: service_started
       shippingservice:
         condition: service_started
+      quoteservice:
+        condition: service_started
       otelcol:
         condition: service_started
       kafka:
