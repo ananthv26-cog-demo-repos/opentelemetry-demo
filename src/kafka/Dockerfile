@@ -6,7 +6,7 @@ ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/release
 RUN chmod go+r /tmp/opentelemetry-javaagent.jar
 
 # the ubi9 base ships neither netcat nor a package manager; the healthcheck needs `nc`
-COPY --from=busybox:musl /bin/busybox /usr/local/bin/nc
+COPY --from=busybox:1.38.0-musl@sha256:32b5cdad7cce41dfd53d0ae06baebcf8357a147ee7694dc706911c373bc30c37 /bin/busybox /usr/local/bin/nc
 
 USER appuser
 WORKDIR /tmp
