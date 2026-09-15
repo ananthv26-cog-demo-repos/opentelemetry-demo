@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(currency-service)
 
 find_package(Protobuf)
 find_package(gRPC)
+find_package(opentelemetry-cpp CONFIG REQUIRED)
 
 set(PROTO_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 set(GENERATED_PROTOBUF_PATH "${CMAKE_BINARY_DIR}/generated/proto")
@@ -62,6 +63,6 @@ add_executable(currencyservice src/server.cpp)
 add_dependencies(currencyservice demo-proto)
 target_link_libraries(
     currencyservice demo-proto protobuf::libprotobuf
-     opentelemetry_trace opentelemetry_common opentelemetry_exporter_otlp_grpc opentelemetry_exporter_otlp_grpc_client opentelemetry_proto opentelemetry_otlp_recordable opentelemetry_resources gRPC::grpc++)
+    opentelemetry-cpp::trace opentelemetry-cpp::otlp_grpc_exporter gRPC::grpc++)
 
 install(TARGETS currencyservice DESTINATION bin)
